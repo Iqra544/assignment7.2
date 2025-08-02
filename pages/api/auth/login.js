@@ -15,14 +15,14 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  const token = await new SignJWT({ id: user._id, role: user.role })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('1h')
-    .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+  const token = await new SignJWT({ id: user._id.toString(), role: user.role }) // ✅ convert to string
+  .setProtectedHeader({ alg: 'HS256' })
+  .setExpirationTime('1h')
+  .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
-  // ✅ Set HttpOnly cookie correctly
+  // 🔓 Allow access to token from client-side
   res.setHeader('Set-Cookie', cookie.serialize('token', token, {
-    httpOnly: true,
+    httpOnly: false, // ✅ Allow client-side access
     path: '/',
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
