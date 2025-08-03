@@ -1,7 +1,7 @@
 import { connectDB } from '../../../lib/mongodb';
 import Attendance from '../../../models/Attendance';
+import User from '../../../models/User'; // ✅ Register the schema
 import { jwtVerify } from 'jose';
-import { NextResponse } from 'next/server';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
@@ -27,7 +27,6 @@ export default async function handler(req, res) {
   } else {
     records = await Attendance.find({ userId: id }).populate('userId', 'name');
   }
-  
 
   res.status(200).json(records);
 }
