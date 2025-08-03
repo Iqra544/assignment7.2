@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
 import {
+  Home,
   Calendar,
   DollarSign,
   UserPlus,
@@ -13,50 +16,68 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Define role state if you want to store role from localStorage
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    console.log("Stored role:", storedRole); // Debug info
+    setRole(storedRole);
+  }, []);
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout');
     router.push('/login');
   };
 
-  const navItems = [
-    { name: 'Attendance History', href: '/attendance', icon: <Calendar size={18} /> },
-    { name: 'Payroll', href: '/admin/payroll', icon: <DollarSign size={18} /> },
-    { name: 'Add Employee', href: '/admin/employee', icon: <UserPlus size={18} /> },
+  const menu = [
+    { name: 'Dashboard', icon: <Home size={18} />, href: '/admin' },
+    { name: 'Attendance', icon: <Calendar size={18} />, href: '/attendance' },
+    { name: 'Payroll', icon: <DollarSign size={18} />, href: '/admin/payroll' },
+    { name: 'Add Employee', icon: <UserPlus size={18} />, href: '/admin/employee' },
+    { name: 'Logout', icon: <LogOut size={18} />, action: handleLogout },
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r shadow-sm p-6 flex flex-col">
-        <h2 className="text-2xl font-bold text-indigo-700 mb-6 border-b pb-3">Admin Panel</h2>
-        
-        <nav className="flex-1 space-y-2">
-          {navItems.map((item, idx) => {
-            const isActive = pathname.startsWith(item.href);
+      <aside className="w-64 bg-white shadow-lg">
+        <div className="p-6 text-indigo-700 font-extrabold text-xl border-b border-gray-200">
+          Admin Panel
+        </div>
+        <nav className="p-4 space-y-2">
+          {menu.map((item, idx) => {
+            const isActive = item.href && (
+              pathname === item.href || pathname.startsWith(item.href + '/')
+            );
+
+            if (item.href) {
+              return (
+                <Link
+                  key={idx}
+                  href={item.href}
+                  className={`flex items-center w-full px-4 py-2 rounded-lg text-left transition ${
+                    isActive ? 'bg-indigo-100 text-indigo-800' : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <span className="mr-3">{item.icon}</span>
+                  {item.name}
+                </Link>
+              );
+            }
+
             return (
-              <Link
+              <button
                 key={idx}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition font-medium ${
-                  isActive
-                    ? "bg-indigo-100 text-indigo-800"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
+                onClick={item.action}
+                className="flex items-center w-full px-4 py-2 rounded-lg text-left text-gray-700 hover:bg-red-100 transition"
               >
-                {item.icon}
+                <span className="mr-3">{item.icon}</span>
                 {item.name}
-              </Link>
+              </button>
             );
           })}
         </nav>
-
-        <button
-          onClick={handleLogout}
-          className="mt-6 flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
-        >
-          <LogOut size={18} />
-          Logout
-        </button>
       </aside>
 
       {/* Main Content */}

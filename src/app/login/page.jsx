@@ -15,6 +15,7 @@ export default function LoginPage() {
     });
     const data = await res.json();
     if (res.ok) {
+      localStorage.setItem("role", data.role);
       router.push(data.role === 'admin' ? '/admin' : '/user');
     } else {
       alert(data.error);

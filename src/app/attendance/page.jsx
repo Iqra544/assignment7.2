@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
+import AdminLayout from "@/components/AdminLayout";
 
 export default function AttendanceHistory() {
   const [records, setRecords] = useState([]);
+  const [role, setRole] = useState(null); // null = not loaded yet
 
   useEffect(() => {
     async function fetchHistory() {
@@ -10,13 +12,18 @@ export default function AttendanceHistory() {
       const data = await res.json();
       setRecords(data);
     }
+
     fetchHistory();
+
+    // Load role from localStorage
+    const storedRole = localStorage.getItem("role");
+    console.log("Loaded role:", storedRole); // Debug
+    setRole(storedRole);
   }, []);
 
-  return (
+  const content = (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4 text-center">Attendance History</h1>
-
       {records.length === 0 ? (
         <p className="text-center text-gray-600">No attendance records found.</p>
       ) : (
@@ -47,4 +54,14 @@ export default function AttendanceHistory() {
       )}
     </div>
   );
+
+  // 🕒 Avoid rendering until role is loaded
+  if (role === null) return null;
+
+  // ✅ Wrap in AdminLayout only for admin
+  if (role === "admin") {
+    return <AdminLayout>{content}</AdminLayout>;
+  }
+
+  return content;
 }
